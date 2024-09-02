@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     SLEEP_BETWEEN_TASK_CLAIM: list[int] = [5, 10]
     SLEEP_BETWEEN_FARMING: list[int] = [10, 20]
 
-    USE_PROXY_FROM_FILE: bool = False
+    USE_PROXY_FROM_FILE: bool = True
 
 
 settings = Settings()
