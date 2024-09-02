@@ -3,6 +3,7 @@ import glob
 import asyncio
 import argparse
 from itertools import cycle
+import re
 
 from pyrogram import Client
 from better_proxy import Proxy
@@ -31,8 +32,9 @@ Select an action:
 def get_session_names() -> list[str]:
     session_names = glob.glob('sessions/*.session')
     session_names = [os.path.splitext(os.path.basename(file))[0] for file in session_names]
-
-    return session_names
+    
+    # Sort session names based on their numeric value
+    return sorted(session_names, key=lambda x: int(re.findall(r'\d+', x)[0]) if re.findall(r'\d+', x) else 0)
 
 
 def get_proxies() -> list[Proxy]:
@@ -97,8 +99,14 @@ async def process() -> None:
 
 async def run_tasks(tg_clients: list[Client]):
     proxies = get_proxies()
-    proxies_cycle = cycle(proxies) if proxies else None
-    tasks = [asyncio.create_task(run_claimer(tg_client=tg_client, proxy=next(proxies_cycle) if proxies_cycle else None))
-             for tg_client in tg_clients]
+    tasks = []
+
+    for i, tg_client in enumerate(tg_clients):
+        proxy = proxies[i % len(proxies)] if proxies else None
+        tasks.append(asyncio.create_task(run_claimer(tg_client=tg_client, proxy=proxy)))
 
     await asyncio.gather(*tasks)
+
+
+if __name__ == "__main__":
+    asyncio.run(process())
